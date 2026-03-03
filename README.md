@@ -295,4 +295,3 @@ Defined in `.env.local`:
 - Keep API hooks (`api/*`) and backend routes (`server/route.ts`) consistent for payload shape.
 - Validate schema changes in Appwrite and mirror field names in server query/create/update code.
 - Run `npm run build` before merging to catch typing/runtime integration issues early.
- 
