@@ -43,13 +43,20 @@ interface CreateTaskFormProps {
 export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: CreateTaskFormProps) => {
   const workspaceId = useWorkspaceId();
   const { mutate, isPending } = useCreateTask();
+  const hasProjects = projectOptions.length > 0;
+  const hasMembers = memberOptions.length > 0;
   const formSchema = createTaskSchema.omit({ workspaceId: true }).extend({
     dueDate: z.date(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {},
+    defaultValues: {
+      name: "",
+      status: TaskStatus.TODO,
+      projectId: projectOptions[0]?.id ?? "",
+      assigneeId: memberOptions[0]?.id ?? "",
+    },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
@@ -117,8 +124,9 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                       Assignee
                     </FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value}
                       onValueChange={field.onChange}
+                      disabled={!hasMembers}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -152,7 +160,7 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                       Status
                     </FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value}
                       onValueChange={field.onChange}
                     >
                       <FormControl>
@@ -187,8 +195,9 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                       Project
                     </FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value}
                       onValueChange={field.onChange}
+                      disabled={!hasProjects}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -215,6 +224,13 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                 )}
               />
             </div>
+            {(!hasProjects || !hasMembers) && (
+              <p className="text-sm text-destructive mt-4">
+                {!hasProjects
+                  ? "Create at least one project before creating a task."
+                  : "No members found for this workspace."}
+              </p>
+            )}
             <DottedSeparator className="py-7" />
             <div className="flex items-center justify-between">
               <Button
@@ -228,7 +244,7 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                 Cancel
               </Button>
               <Button
-                disabled={isPending}
+                disabled={isPending || !hasProjects || !hasMembers}
                 type="submit"
                 size="lg"
               >
