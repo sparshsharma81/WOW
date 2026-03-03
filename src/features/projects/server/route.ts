@@ -273,7 +273,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
           Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString())
         ]
@@ -283,7 +283,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
           Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString())
         ]
@@ -300,7 +300,7 @@ const app = new Hono()
           DATABASE_ID,
           TASKS_ID,
           [
-            Query.equal("projectId", projectId),
+            Query.equal("projectID", projectId),
             Query.equal("assigneeId", member.$id),
             Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
             Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString())
@@ -311,7 +311,7 @@ const app = new Hono()
           DATABASE_ID,
           TASKS_ID,
           [
-            Query.equal("projectId", projectId),
+            Query.equal("projectID", projectId),
             Query.equal("assigneeId", member.$id),
             Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
             Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString())
@@ -329,7 +329,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.notEqual("status", TaskStatus.DONE),
           Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
           Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString())
@@ -340,7 +340,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.notEqual("status", TaskStatus.DONE),
           Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
           Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString())
@@ -355,7 +355,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.equal("status", TaskStatus.DONE),
           Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
           Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString())
@@ -366,7 +366,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.equal("status", TaskStatus.DONE),
           Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
           Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString())
@@ -381,7 +381,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.notEqual("status", TaskStatus.DONE),
           Query.lessThan("dueDate", now.toISOString()),
           Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
@@ -393,7 +393,7 @@ const app = new Hono()
         DATABASE_ID,
         TASKS_ID,
         [
-          Query.equal("projectId", projectId),
+          Query.equal("projectID", projectId),
           Query.notEqual("status", TaskStatus.DONE),
           Query.lessThan("dueDate", now.toISOString()),
           Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
