@@ -10,10 +10,19 @@ import { getMember } from "@/features/members/utils";
 
 import { generateInviteCode } from "@/lib/utils";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, IMAGES_BUCKET_ID, MEMBERS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
+import { DATABASE_ID, MEMBERS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
 
 import { Workspace } from "../types";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
+
+const getWorkspaceImageUrl = (workspace: any) => workspace.imageUrl ?? workspace.ImageURL;
+const TASK_ASSIGNEE_FIELDS = ["assignedID", "assigneeId", "assigneeid"] as const;
+
+const toImageDataUrl = async (file: File) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const mimeType = file.type || "image/png";
+  return `data:${mimeType};base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+};
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -32,7 +41,7 @@ const app = new Hono()
 
     const workspaceIds = members.documents.map((member) => member.workspaceId);
 
-    const workspaces = await databases.listDocuments(
+    const workspaces = await databases.listDocuments<Workspace>(
       DATABASE_ID,
       WORKSPACES_ID,
       [
@@ -41,7 +50,15 @@ const app = new Hono()
       ],
     );
 
-    return c.json({ data: workspaces });
+    return c.json({
+      data: {
+        ...workspaces,
+        documents: workspaces.documents.map((workspace) => ({
+          ...workspace,
+          imageUrl: getWorkspaceImageUrl(workspace),
+        })),
+      },
+    });
   })
   .get(
     "/:workspaceId",
@@ -67,7 +84,12 @@ const app = new Hono()
         workspaceId,
       );
 
-      return c.json({ data: workspace });
+      return c.json({
+        data: {
+          ...workspace,
+          imageUrl: getWorkspaceImageUrl(workspace),
+        },
+      });
     }
   )
   .get(
@@ -87,7 +109,7 @@ const app = new Hono()
         data: { 
           $id: workspace.$id, 
           name: workspace.name, 
-          imageUrl: workspace.imageUrl
+          imageUrl: getWorkspaceImageUrl(workspace)
         } 
       });
     }
@@ -98,7 +120,6 @@ const app = new Hono()
     sessionMiddleware,
     async (c) => {
       const databases = c.get("databases");
-      const storage = c.get("storage");
       const user = c.get("user");
 
       const { name, image } = c.req.valid("form");
@@ -106,18 +127,12 @@ const app = new Hono()
       let uploadedImageUrl: string | undefined;
 
       if (image instanceof File) {
-        const file = await storage.createFile(
-          IMAGES_BUCKET_ID,
-          ID.unique(),
-          image,
-        );
-
-        const arrayBuffer = await storage.getFileView(
-          IMAGES_BUCKET_ID,
-          file.$id,
-        );
-
-        uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+        try {
+          uploadedImageUrl = await toImageDataUrl(image);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unable to upload workspace image";
+          return c.json({ error: message }, 400);
+        }
       }
 
       const workspace = await databases.createDocument(
@@ -127,7 +142,7 @@ const app = new Hono()
         {
           name,
           userid: user.$id,
-          imageUrl: uploadedImageUrl,
+          ImageURL: uploadedImageUrl,
           inviteCode: generateInviteCode(6),
         },
       );
@@ -143,7 +158,12 @@ const app = new Hono()
         },
       );
 
-      return c.json({ data: workspace });
+      return c.json({
+        data: {
+          ...workspace,
+          imageUrl: getWorkspaceImageUrl(workspace),
+        },
+      });
     }
   )
   .patch(
@@ -152,7 +172,6 @@ const app = new Hono()
     zValidator("form", updateWorkspaceSchema),
     async (c) => {
       const databases = c.get("databases");
-      const storage = c.get("storage");
       const user = c.get("user");
 
       const { workspaceId } = c.req.param();
@@ -171,18 +190,12 @@ const app = new Hono()
       let uploadedImageUrl: string | undefined;
 
       if (image instanceof File) {
-        const file = await storage.createFile(
-          IMAGES_BUCKET_ID,
-          ID.unique(),
-          image,
-        );
-
-        const arrayBuffer = await storage.getFileView(
-          IMAGES_BUCKET_ID,
-          file.$id,
-        );
-
-        uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+        try {
+          uploadedImageUrl = await toImageDataUrl(image);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unable to upload workspace image";
+          return c.json({ error: message }, 400);
+        }
       } else {
         uploadedImageUrl = image;
       } 
@@ -193,11 +206,16 @@ const app = new Hono()
         workspaceId,
         {
           name,
-          imageUrl: uploadedImageUrl
+          ImageURL: uploadedImageUrl
         }
       );
 
-      return c.json({ data: workspace });
+      return c.json({
+        data: {
+          ...workspace,
+          imageUrl: getWorkspaceImageUrl(workspace),
+        },
+      });
     }
   )
   .delete(
@@ -357,27 +375,36 @@ const app = new Hono()
       let assignedTaskDifference = 0;
 
       try {
-        const thisMonthAssignedTasks = await databases.listDocuments(
-          DATABASE_ID,
-          TASKS_ID,
-          [
-            Query.equal("workspaceId", workspaceId),
-            Query.equal("assigneeId", member.$id),
-            Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
-            Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString())
-          ]
-        );
+        const getAssignedTasksForRange = async (start: Date, end: Date) => {
+          let lastError: unknown = null;
 
-        const lastMonthAssignedTasks = await databases.listDocuments(
-          DATABASE_ID,
-          TASKS_ID,
-          [
-            Query.equal("workspaceId", workspaceId),
-            Query.equal("assigneeId", member.$id),
-            Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
-            Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString())
-          ]
-        );
+          for (const assigneeField of TASK_ASSIGNEE_FIELDS) {
+            try {
+              return await databases.listDocuments(
+                DATABASE_ID,
+                TASKS_ID,
+                [
+                  Query.equal("workspaceId", workspaceId),
+                  Query.equal(assigneeField, member.$id),
+                  Query.greaterThanEqual("$createdAt", start.toISOString()),
+                  Query.lessThanEqual("$createdAt", end.toISOString())
+                ]
+              );
+            } catch (error) {
+              lastError = error;
+              const message = error instanceof Error ? error.message : String(error);
+              if (message.includes("Attribute not found in schema") || message.includes("Unknown attribute")) {
+                continue;
+              }
+              throw error;
+            }
+          }
+
+          throw lastError ?? new Error("Unable to query assigned tasks");
+        };
+
+        const thisMonthAssignedTasks = await getAssignedTasksForRange(thisMonthStart, thisMonthEnd);
+        const lastMonthAssignedTasks = await getAssignedTasksForRange(lastMonthStart, lastMonthEnd);
 
         assignedTaskCount = thisMonthAssignedTasks.total;
         assignedTaskDifference = assignedTaskCount - lastMonthAssignedTasks.total;

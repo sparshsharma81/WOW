@@ -37,6 +37,9 @@ interface EditWorkspaceFormProps {
 };
 
 export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceFormProps) => {
+  const MAX_IMAGE_SIZE = 1024 * 1024;
+  const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/svg+xml", "image/jpg"]);
+
   const router = useRouter();
   const { mutate, isPending } = useUpdateWorkspace();
   const { 
@@ -109,6 +112,19 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        form.setError("image", { message: "Image must be 1MB or smaller" });
+        e.target.value = "";
+        return;
+      }
+
+      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+        form.setError("image", { message: "Only JPG, JPEG, PNG, or SVG files are allowed" });
+        e.target.value = "";
+        return;
+      }
+
+      form.clearErrors("image");
       form.setValue("image", file);
     }
   };
@@ -163,7 +179,8 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                   control={form.control}
                   name="image"
                   render={({ field }) => (
-                    <div className="flex flex-col gap-y-2">
+                    <FormItem>
+                      <div className="flex flex-col gap-y-2">
                       <div className="flex items-center gap-x-5">
                         {field.value ? (
                           <div className="size-[72px] relative rounded-md overflow-hidden">
@@ -228,7 +245,9 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                           )}
                         </div>
                       </div>
-                    </div>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
                   )}
                 />
               </div>

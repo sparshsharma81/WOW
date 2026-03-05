@@ -19,7 +19,8 @@ export const useUpdateProject = () => {
       const response = await client.api.projects[":projectId"]["$patch"]({ form, param });
 
       if (!response.ok) {
-        throw new Error("Failed to update project");
+        const payload = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(payload?.error ?? "Failed to update project");
       }
 
       return await response.json();
@@ -30,8 +31,8 @@ export const useUpdateProject = () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["project", data.$id] });
     },
-    onError: () => {
-      toast.error("Failed to update project");
+    onError: (error) => {
+      toast.error(error.message || "Failed to update project");
     }
   });
 

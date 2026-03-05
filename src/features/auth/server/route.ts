@@ -67,22 +67,26 @@ const app = new Hono()
     zValidator("json", loginSchema),
     async (c) => {
       const { email, password } = c.req.valid("json");
+      try {
+        const { account } = await createAdminClient();
+        const session = await account.createEmailPasswordSession(
+          email,
+          password,
+        );
 
-      const { account } = await createAdminClient();
-      const session = await account.createEmailPasswordSession(
-        email,
-        password,
-      );
+        setCookie(c, AUTH_COOKIE, session.secret, {
+          path: "/",
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          maxAge: 60 * 60 * 24 * 30,
+        });
 
-      setCookie(c, AUTH_COOKIE, session.secret, {
-        path: "/",
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 60 * 60 * 24 * 30,
-      });
-
-      return c.json({ success: true });
+        return c.json({ success: true });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Invalid credentials";
+        return c.json({ error: message }, 401);
+      }
     }
   )
   .post(
@@ -90,29 +94,33 @@ const app = new Hono()
     zValidator("json", registerSchema),
     async (c) => {
       const { name, email, password } = c.req.valid("json");
+      try {
+        const { account } = await createAdminClient();
+        await account.create(
+          ID.unique(),
+          email,
+          password,
+          name,
+        );
 
-      const { account } = await createAdminClient();
-      await account.create(
-        ID.unique(),
-        email,
-        password,
-        name,
-      );
+        const session = await account.createEmailPasswordSession(
+          email,
+          password,
+        );
 
-      const session = await account.createEmailPasswordSession(
-        email,
-        password,
-      );
+        setCookie(c, AUTH_COOKIE, session.secret, {
+          path: "/",
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          maxAge: 60 * 60 * 24 * 30,
+        });
 
-      setCookie(c, AUTH_COOKIE, session.secret, {
-        path: "/",
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 60 * 60 * 24 * 30,
-      });
-
-      return c.json({ success: true });
+        return c.json({ success: true });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Registration failed";
+        return c.json({ error: message }, 400);
+      }
     }
   )
   .post("/logout", sessionMiddleware, async (c) => {

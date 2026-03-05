@@ -7,12 +7,21 @@ import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 import { TaskStatus } from "@/features/tasks/types";
 import { getMember } from "@/features/members/utils";
 
-import { DATABASE_ID, IMAGES_BUCKET_ID, PROJECTS_ID, TASKS_ID } from "@/config";
+import { DATABASE_ID, PROJECTS_ID, TASKS_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 import { createProjectSchema, updateProjectSchema } from "../schemas";
 
 import { Project } from "../types";
+
+const getProjectImageUrl = (project: any) => project.imageUrl ?? project.ImageURL;
+const TASK_ASSIGNEE_FIELDS = ["assignedID", "assigneeId", "assigneeid"] as const;
+
+const toImageDataUrl = async (file: File) => {
+  const arrayBuffer = await file.arrayBuffer();
+  const mimeType = file.type || "image/png";
+  return `data:${mimeType};base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+};
 
 const assertProjectsCollectionId = () => {
   if (!PROJECTS_ID) {
@@ -28,7 +37,6 @@ const app = new Hono()
     async (c) => {
       assertProjectsCollectionId();
       const databases = c.get("databases");
-      const storage = c.get("storage");
       const user = c.get("user");
 
       const { name, image, workspaceId } = c.req.valid("form");
@@ -46,18 +54,7 @@ const app = new Hono()
       let uploadedImageUrl: string | undefined;
 
       if (image instanceof File) {
-        const file = await storage.createFile(
-          IMAGES_BUCKET_ID,
-          ID.unique(),
-          image,
-        );
-
-        const arrayBuffer = await storage.getFileView(
-          IMAGES_BUCKET_ID,
-          file.$id,
-        );
-
-        uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+        uploadedImageUrl = await toImageDataUrl(image);
       }
 
       const project = await databases.createDocument(
@@ -66,12 +63,17 @@ const app = new Hono()
         ID.unique(),
         {
           name,
-          imageUrl: uploadedImageUrl,
+          ImageURL: uploadedImageUrl,
           workspaceId
         },
       );
 
-      return c.json({ data: project });
+      return c.json({
+        data: {
+          ...project,
+          imageUrl: getProjectImageUrl(project),
+        },
+      });
     }
   )
   .get(
@@ -108,7 +110,15 @@ const app = new Hono()
         ],
       );
 
-      return c.json({ data: projects });
+      return c.json({
+        data: {
+          ...projects,
+          documents: projects.documents.map((project) => ({
+            ...project,
+            imageUrl: getProjectImageUrl(project),
+          })),
+        },
+      });
     }
   )
   .get(
@@ -136,7 +146,12 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      return c.json({ data: project });
+      return c.json({
+        data: {
+          ...project,
+          imageUrl: getProjectImageUrl(project),
+        },
+      });
     }
   )
   .patch(
@@ -146,7 +161,6 @@ const app = new Hono()
     async (c) => {
       assertProjectsCollectionId();
       const databases = c.get("databases");
-      const storage = c.get("storage");
       const user = c.get("user");
 
       const { projectId } = c.req.param();
@@ -171,18 +185,7 @@ const app = new Hono()
       let uploadedImageUrl: string | undefined;
 
       if (image instanceof File) {
-        const file = await storage.createFile(
-          IMAGES_BUCKET_ID,
-          ID.unique(),
-          image,
-        );
-
-        const arrayBuffer = await storage.getFileView(
-          IMAGES_BUCKET_ID,
-          file.$id,
-        );
-
-        uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString("base64")}`;
+        uploadedImageUrl = await toImageDataUrl(image);
       } else {
         uploadedImageUrl = image;
       } 
@@ -193,11 +196,16 @@ const app = new Hono()
         projectId,
         {
           name,
-          imageUrl: uploadedImageUrl
+          ImageURL: uploadedImageUrl
         }
       );
 
-      return c.json({ data: project });
+      return c.json({
+        data: {
+          ...project,
+          imageUrl: getProjectImageUrl(project),
+        },
+      });
     }
   )
   .delete(
@@ -296,27 +304,36 @@ const app = new Hono()
       let assignedTaskDifference = 0;
 
       try {
-        const thisMonthAssignedTasks = await databases.listDocuments(
-          DATABASE_ID,
-          TASKS_ID,
-          [
-            Query.equal("projectID", projectId),
-            Query.equal("assigneeId", member.$id),
-            Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
-            Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString())
-          ]
-        );
+        const getAssignedTasksForRange = async (start: Date, end: Date) => {
+          let lastError: unknown = null;
 
-        const lastMonthAssignedTasks = await databases.listDocuments(
-          DATABASE_ID,
-          TASKS_ID,
-          [
-            Query.equal("projectID", projectId),
-            Query.equal("assigneeId", member.$id),
-            Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
-            Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString())
-          ]
-        );
+          for (const assigneeField of TASK_ASSIGNEE_FIELDS) {
+            try {
+              return await databases.listDocuments(
+                DATABASE_ID,
+                TASKS_ID,
+                [
+                  Query.equal("projectID", projectId),
+                  Query.equal(assigneeField, member.$id),
+                  Query.greaterThanEqual("$createdAt", start.toISOString()),
+                  Query.lessThanEqual("$createdAt", end.toISOString())
+                ]
+              );
+            } catch (error) {
+              lastError = error;
+              const message = error instanceof Error ? error.message : String(error);
+              if (message.includes("Attribute not found in schema") || message.includes("Unknown attribute")) {
+                continue;
+              }
+              throw error;
+            }
+          }
+
+          throw lastError ?? new Error("Unable to query assigned tasks");
+        };
+
+        const thisMonthAssignedTasks = await getAssignedTasksForRange(thisMonthStart, thisMonthEnd);
+        const lastMonthAssignedTasks = await getAssignedTasksForRange(lastMonthStart, lastMonthEnd);
 
         assignedTaskCount = thisMonthAssignedTasks.total;
         assignedTaskDifference = assignedTaskCount - lastMonthAssignedTasks.total;

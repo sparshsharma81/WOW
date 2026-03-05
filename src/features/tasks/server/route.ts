@@ -13,6 +13,33 @@ import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
 import { Task, TaskStatus } from "../types";
 import { createTaskSchema } from "../schemas";
 
+const PROJECT_FIELDS = ["projectID", "projectId"] as const;
+const ASSIGNEE_FIELDS = ["assignedID", "assigneeId", "assigneeid"] as const;
+
+const getErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message;
+  return String(error);
+};
+
+const isAttributeNotInSchemaError = (error: unknown, attribute: string) => {
+  const message = getErrorMessage(error);
+  return message.includes(`Attribute not found in schema: ${attribute}`);
+};
+
+const isUnknownAttributeError = (error: unknown, attribute: string) => {
+  const message = getErrorMessage(error);
+  return message.includes(`Unknown attribute: ${attribute}`);
+};
+
+const isMissingRequiredAttributeError = (error: unknown, attribute: string) => {
+  const message = getErrorMessage(error);
+  return message.includes(`Missing required attribute "${attribute}"`);
+};
+
+const getTaskProjectId = (task: any) => task.projectID ?? task.projectId;
+const getTaskAssigneeId = (task: any) => task.assigneeId ?? task.assigneeid ?? task.assignedID;
+const getTaskDescription = (task: any) => task.Description ?? task.description;
+
 const app = new Hono()
   .delete(
     "/:taskId",
@@ -85,44 +112,69 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const query = [
-        Query.equal("workspaceId", workspaceId),
-        Query.orderDesc("$createdAt")
-      ];
+      const projectFields = projectId ? [...PROJECT_FIELDS] : [null];
+      const assigneeFields = assigneeId ? [...ASSIGNEE_FIELDS] : [null];
 
-      if (projectId) {
-        console.log("projectId: ", projectId);
-        query.push(Query.equal("projectId", projectId));
+      let tasks: Awaited<ReturnType<typeof databases.listDocuments<Task>>> | null = null;
+      let lastError: unknown = null;
+
+      for (const projectField of projectFields) {
+        for (const assigneeField of assigneeFields) {
+          const query = [
+            Query.equal("workspaceId", workspaceId),
+            Query.orderDesc("$createdAt")
+          ];
+
+          if (projectId && projectField) {
+            query.push(Query.equal(projectField, projectId));
+          }
+
+          if (status) {
+            query.push(Query.equal("status", status));
+          }
+
+          if (assigneeId && assigneeField) {
+            query.push(Query.equal(assigneeField, assigneeId));
+          }
+
+          if (dueDate) {
+            query.push(Query.equal("dueDate", dueDate));
+          }
+
+          if (search) {
+            query.push(Query.search("name", search));
+          }
+
+          try {
+            tasks = await databases.listDocuments<Task>(
+              DATABASE_ID,
+              TASKS_ID,
+              query,
+            );
+            break;
+          } catch (error) {
+            lastError = error;
+
+            if (
+              (projectField && (isAttributeNotInSchemaError(error, projectField) || isUnknownAttributeError(error, projectField))) ||
+              (assigneeField && (isAttributeNotInSchemaError(error, assigneeField) || isUnknownAttributeError(error, assigneeField)))
+            ) {
+              continue;
+            }
+
+            throw error;
+          }
+        }
+
+        if (tasks) break;
       }
 
-      if (status) {
-        console.log("status: ", status);
-        query.push(Query.equal("status", status));
+      if (!tasks) {
+        throw lastError;
       }
 
-      if (assigneeId) {
-        console.log("assigneeId: ", assigneeId);
-        query.push(Query.equal("assigneeId", assigneeId));
-      }
-
-      if (dueDate) {
-        console.log("dueDate: ", dueDate);
-        query.push(Query.equal("dueDate", dueDate));
-      }
-
-      if (search) {
-        console.log("search: ", search);
-        query.push(Query.search("name", search));
-      }
-
-      const tasks = await databases.listDocuments<Task>(
-        DATABASE_ID,
-        TASKS_ID,
-        query,
-      );
-
-      const projectIds = tasks.documents.map((task: any) => task.projectId ?? task.projectID);
-      const assigneeIds = tasks.documents.map((task: any) => task.assigneeId ?? task.assigneeid);
+      const projectIds = tasks.documents.map((task: any) => getTaskProjectId(task));
+      const assigneeIds = tasks.documents.map((task: any) => getTaskAssigneeId(task));
 
       const projects = await databases.listDocuments<Project>(
         DATABASE_ID,
@@ -150,16 +202,17 @@ const app = new Hono()
 
       const populatedTasks = tasks.documents.map((task) => {
         const project = projects.documents.find(
-          (project) => project.$id === ((task as any).projectId ?? task.projectID),
+          (project) => project.$id === getTaskProjectId(task),
         );
         const assignee = assignees.find(
-          (assignee) => assignee.$id === ((task as any).assigneeId ?? task.assigneeid),
+          (assignee) => assignee.$id === getTaskAssigneeId(task),
         );
 
         return {
           ...task,
-          projectId: (task as any).projectId ?? task.projectID,
-          assigneeId: (task as any).assigneeId ?? task.assigneeid,
+          projectId: getTaskProjectId(task),
+          assigneeId: getTaskAssigneeId(task),
+          description: getTaskDescription(task),
           project,
           assignee,
         };
@@ -186,7 +239,8 @@ const app = new Hono()
         workspaceId,
         projectId,
         dueDate,
-        assigneeId
+        assigneeId,
+        description,
       } = c.req.valid("json");
 
       const member = await getMember({
@@ -215,20 +269,56 @@ const app = new Hono()
         ? highestPositionTask.documents[0].position + 1000
         : 1000;
 
-      const task = await databases.createDocument(
-        DATABASE_ID,
-        TASKS_ID,
-        ID.unique(),
-        {
-          name,
-          status,
-          workspaceId,
-          projectId,
-          dueDate: dueDate.toISOString(),
-          assigneeId,
-          position: newPosition
-        },
-      );
+      const baseTaskPayload = {
+        name,
+        status,
+        workspaceId,
+        dueDate: dueDate.toISOString(),
+        position: newPosition,
+        ...(description ? { Description: description } : {}),
+      };
+
+      let task: any = null;
+      let lastCreateError: unknown = null;
+
+      for (const projectField of PROJECT_FIELDS) {
+        for (const assigneeField of ASSIGNEE_FIELDS) {
+          try {
+            task = await databases.createDocument(
+              DATABASE_ID,
+              TASKS_ID,
+              ID.unique(),
+              {
+                ...baseTaskPayload,
+                [projectField]: projectId,
+                [assigneeField]: assigneeId,
+              },
+            );
+            break;
+          } catch (error) {
+            lastCreateError = error;
+
+            if (
+              isUnknownAttributeError(error, projectField) ||
+              isUnknownAttributeError(error, assigneeField) ||
+              isAttributeNotInSchemaError(error, projectField) ||
+              isAttributeNotInSchemaError(error, assigneeField) ||
+              isMissingRequiredAttributeError(error, projectField) ||
+              isMissingRequiredAttributeError(error, assigneeField)
+            ) {
+              continue;
+            }
+
+            throw error;
+          }
+        }
+
+        if (task) break;
+      }
+
+      if (!task) {
+        throw lastCreateError;
+      }
 
       return c.json({ data: task });
     }
@@ -266,19 +356,52 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const task = await databases.updateDocument<Task>(
-        DATABASE_ID,
-        TASKS_ID,
-        taskId,
-        {
-          name,
-          status,
-          projectId,
-          dueDate: dueDate?.toISOString(),
-          assigneeId,
-          description,
-        },
-      );
+      const updatePayloadBase = {
+        name,
+        status,
+        dueDate: dueDate?.toISOString(),
+        ...(description === undefined ? {} : { Description: description }),
+      };
+
+      let task: Task | null = null;
+      let lastUpdateError: unknown = null;
+
+      for (const projectField of PROJECT_FIELDS) {
+        for (const assigneeField of ASSIGNEE_FIELDS) {
+          try {
+            task = await databases.updateDocument<Task>(
+              DATABASE_ID,
+              TASKS_ID,
+              taskId,
+              {
+                ...updatePayloadBase,
+                ...(projectId ? { [projectField]: projectId } : {}),
+                ...(assigneeId ? { [assigneeField]: assigneeId } : {}),
+              },
+            );
+            break;
+          } catch (error) {
+            lastUpdateError = error;
+
+            if (
+              isUnknownAttributeError(error, projectField) ||
+              isUnknownAttributeError(error, assigneeField) ||
+              isAttributeNotInSchemaError(error, projectField) ||
+              isAttributeNotInSchemaError(error, assigneeField)
+            ) {
+              continue;
+            }
+
+            throw error;
+          }
+        }
+
+        if (task) break;
+      }
+
+      if (!task) {
+        throw lastUpdateError;
+      }
 
       return c.json({ data: task });
     }
@@ -311,13 +434,13 @@ const app = new Hono()
       const project = await databases.getDocument<Project>(
         DATABASE_ID,
         PROJECTS_ID,
-        (task as any).projectId ?? task.projectID
+        getTaskProjectId(task)
       );
 
       const member = await databases.getDocument(
         DATABASE_ID,
         MEMBERS_ID,
-        (task as any).assigneeId ?? task.assigneeid
+        getTaskAssigneeId(task)
       );
 
       const user = await users.get(member.userId);
@@ -331,8 +454,9 @@ const app = new Hono()
       return c.json({
         data: {
           ...task,
-          projectId: (task as any).projectId ?? task.projectID,
-          assigneeId: (task as any).assigneeId ?? task.assigneeid,
+          projectId: getTaskProjectId(task),
+          assigneeId: getTaskAssigneeId(task),
+          description: getTaskDescription(task),
           project,
           assignee,
         },

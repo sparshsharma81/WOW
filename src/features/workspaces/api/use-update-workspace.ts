@@ -19,7 +19,8 @@ export const useUpdateWorkspace = () => {
       const response = await client.api.workspaces[":workspaceId"]["$patch"]({ form, param });
 
       if (!response.ok) {
-        throw new Error("Failed to update workspace");
+        const payload = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(payload?.error ?? "Failed to update workspace");
       }
 
       return await response.json();
@@ -30,8 +31,8 @@ export const useUpdateWorkspace = () => {
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       queryClient.invalidateQueries({ queryKey: ["workspace", data.$id] });
     },
-    onError: () => {
-      toast.error("Failed to create workspace");
+    onError: (error) => {
+      toast.error(error.message || "Failed to update workspace");
     }
   });
 
