@@ -21,7 +21,6 @@ export const createProjectSchema = z.object({
   image: z.union([
     imageFileSchema,
     z.string().transform((value) => value === "" ? undefined : value),
-    z.null().transform(() => undefined),
   ])
   .optional(),
   workspaceId: z.string(),
@@ -32,7 +31,6 @@ export const updateProjectSchema = z.object({
   image: z.union([
     imageFileSchema,
     z.string().transform((value) => value === "" ? undefined : value),
-    z.null().transform(() => undefined),
   ])
   .optional(),
 });

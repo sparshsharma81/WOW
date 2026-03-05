@@ -21,7 +21,6 @@ export const createWorkspaceSchema = z.object({
   image: z.union([
     imageFileSchema,
     z.string().transform((value) => value === "" ? undefined : value),
-    z.null().transform(() => undefined),
   ])
   .optional(),
 });
@@ -31,7 +30,6 @@ export const updateWorkspaceSchema = z.object({
   image: z.union([
     imageFileSchema,
     z.string().transform((value) => value === "" ? undefined : value),
-    z.null().transform(() => undefined),
   ])
   .optional(),
 });

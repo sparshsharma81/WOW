@@ -9,24 +9,28 @@ import { createAdminClient } from "@/lib/appwrite";
 const getBaseUrl = async () => {
   const headersList = await headers();
 
-  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (envUrl && envUrl.startsWith("http")) {
-    return envUrl;
-  }
+  const normalize = (value: string) => value.replace(/\/+$/, "");
 
-  const forwardedProto = headersList.get("x-forwarded-proto");
-  const forwardedHost = headersList.get("x-forwarded-host");
+  const forwardedProtoRaw = headersList.get("x-forwarded-proto") ?? "https";
+  const forwardedHostRaw = headersList.get("x-forwarded-host") ?? headersList.get("host");
+  const forwardedProto = forwardedProtoRaw.split(",")[0]?.trim();
+  const forwardedHost = forwardedHostRaw?.split(",")[0]?.trim();
 
   if (forwardedProto && forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}`;
+    return normalize(`${forwardedProto}://${forwardedHost}`);
   }
 
-  const host = headersList.get("host");
-  if (host) {
-    return `https://${host}`;
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) {
+    return normalize(`https://${vercelUrl}`);
   }
 
-  return "http://localhost:3000";
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (envUrl && envUrl.startsWith("http")) {
+    return normalize(envUrl);
+  }
+
+  return normalize("http://localhost:3000");
 };
 
 export async function signUpWithGithub() {
