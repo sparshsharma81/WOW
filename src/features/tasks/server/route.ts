@@ -92,7 +92,7 @@ const app = new Hono()
 
       if (projectId) {
         console.log("projectId: ", projectId);
-        query.push(Query.equal("projectID", projectId));
+        query.push(Query.equal("projectId", projectId));
       }
 
       if (status) {
@@ -102,7 +102,7 @@ const app = new Hono()
 
       if (assigneeId) {
         console.log("assigneeId: ", assigneeId);
-        query.push(Query.equal("assigneeid", assigneeId));
+        query.push(Query.equal("assigneeId", assigneeId));
       }
 
       if (dueDate) {
@@ -121,8 +121,8 @@ const app = new Hono()
         query,
       );
 
-      const projectIds = tasks.documents.map((task: any) => task.projectID ?? task.projectId);
-      const assigneeIds = tasks.documents.map((task: any) => task.assigneeid ?? task.assigneeId);
+      const projectIds = tasks.documents.map((task: any) => task.projectId ?? task.projectID);
+      const assigneeIds = tasks.documents.map((task: any) => task.assigneeId ?? task.assigneeid);
 
       const projects = await databases.listDocuments<Project>(
         DATABASE_ID,
@@ -150,16 +150,16 @@ const app = new Hono()
 
       const populatedTasks = tasks.documents.map((task) => {
         const project = projects.documents.find(
-          (project) => project.$id === ((task as any).projectID ?? task.projectId),
+          (project) => project.$id === ((task as any).projectId ?? task.projectID),
         );
         const assignee = assignees.find(
-          (assignee) => assignee.$id === ((task as any).assigneeid ?? task.assigneeId),
+          (assignee) => assignee.$id === ((task as any).assigneeId ?? task.assigneeid),
         );
 
         return {
           ...task,
-          projectId: (task as any).projectID ?? task.projectId,
-          assigneeId: (task as any).assigneeid ?? task.assigneeId,
+          projectId: (task as any).projectId ?? task.projectID,
+          assigneeId: (task as any).assigneeId ?? task.assigneeid,
           project,
           assignee,
         };
@@ -223,9 +223,9 @@ const app = new Hono()
           name,
           status,
           workspaceId,
-          projectID: projectId,
+          projectId,
           dueDate: dueDate.toISOString(),
-          assigneeid: assigneeId,
+          assigneeId,
           position: newPosition
         },
       );
@@ -273,9 +273,9 @@ const app = new Hono()
         {
           name,
           status,
-          projectID: projectId,
+          projectId,
           dueDate: dueDate?.toISOString(),
-          assigneeid: assigneeId,
+          assigneeId,
           description,
         },
       );
@@ -311,13 +311,13 @@ const app = new Hono()
       const project = await databases.getDocument<Project>(
         DATABASE_ID,
         PROJECTS_ID,
-        (task as any).projectID ?? task.projectId
+        (task as any).projectId ?? task.projectID
       );
 
       const member = await databases.getDocument(
         DATABASE_ID,
         MEMBERS_ID,
-        (task as any).assigneeid ?? task.assigneeId
+        (task as any).assigneeId ?? task.assigneeid
       );
 
       const user = await users.get(member.userId);
@@ -331,8 +331,8 @@ const app = new Hono()
       return c.json({
         data: {
           ...task,
-          projectId: (task as any).projectID ?? task.projectId,
-          assigneeId: (task as any).assigneeid ?? task.assigneeId,
+          projectId: (task as any).projectId ?? task.projectID,
+          assigneeId: (task as any).assigneeId ?? task.assigneeid,
           project,
           assignee,
         },
@@ -357,7 +357,7 @@ const app = new Hono()
     async (c) => {
       const databases = c.get("databases");
       const user = c.get("user");
-      const { tasks } = await c.req.valid("json");
+      const { tasks } = c.req.valid("json");
 
       const tasksToUpdate = await databases.listDocuments<Task>(
         DATABASE_ID,

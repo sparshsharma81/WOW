@@ -21,6 +21,7 @@ export const WorkspaceSwitcher = () => {
   const router = useRouter();
   const { data: workspaces } = useGetWorkspaces();
   const { open } = useCreateWorkspaceModal();
+  const isWorkspaceIdValid = Boolean(workspaceId && workspaceId !== "undefined");
 
   const onSelect = (id: string) => {
     router.push(`/workspaces/${id}`);
@@ -32,7 +33,7 @@ export const WorkspaceSwitcher = () => {
         <p className="text-xs uppercase text-neutral-500">Workspaces</p>
         <RiAddCircleFill onClick={open} className="size-5 text-neutral-500 cursor-pointer hover:opacity-75 transition" />
       </div>
-      <Select onValueChange={onSelect} value={workspaceId}>
+      <Select onValueChange={onSelect} value={isWorkspaceIdValid ? workspaceId : undefined}>
         <SelectTrigger className="w-full bg-neutral-200 font-medium p-1">
           <SelectValue placeholder="No workspace selected" />
         </SelectTrigger>
