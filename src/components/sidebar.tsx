@@ -8,15 +8,15 @@ import { WorkspaceSwitcher } from "./workspace-switcher";
 
 export const Sidebar = () => {
   return (
-    <aside className="h-full bg-neutral-50 dark:bg-slate-900 p-4 w-full">
-      <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
+    <aside className="h-full w-full bg-card p-4">
+      <Link href="/" className="inline-block transition-opacity hover:opacity-90">
         <Image src="/logo.png" alt="logo" width={164} height={48} />
       </Link>
-      <DottedSeparator className="my-4" />
+      <DottedSeparator className="my-5" />
       <WorkspaceSwitcher />
-      <DottedSeparator className="my-4" />
+      <DottedSeparator className="my-5" />
       <Navigation />
-      <DottedSeparator className="my-4" />
+      <DottedSeparator className="my-5" />
       <Projects />
     </aside>
   );

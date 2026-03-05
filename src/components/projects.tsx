@@ -26,8 +26,8 @@ export const Projects = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between px-2">
-        <p className="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400">Projects</p>
-        <RiAddCircleFill onClick={open} className="size-5 text-accent cursor-pointer hover:text-blue-500 dark:text-accent dark:hover:text-blue-400 transition-colors duration-200" />
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Projects</p>
+        <RiAddCircleFill onClick={open} className="size-5 cursor-pointer text-accent transition-opacity hover:opacity-80" />
       </div>
       {data?.documents.map((project) => {
         const href = `/workspaces/${workspaceId}/projects/${project.$id}`;
@@ -37,8 +37,8 @@ export const Projects = () => {
           <Link href={href} key={project.$id}>
             <div
               className={cn(
-                "flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-accent/10 dark:hover:bg-blue-500/10 transition-all duration-200 cursor-pointer text-neutral-600 dark:text-neutral-400 hover:text-foreground smooth-transition",
-                isActive && "bg-accent/10 dark:bg-blue-500/15 shadow-sm font-semibold text-accent dark:text-blue-400 border-l-2 border-accent dark:border-blue-400"
+                "flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-accent/10 hover:text-foreground",
+                isActive && "bg-accent/10 font-medium text-accent"
               )}
             >
               <ProjectAvatar image={project.imageUrl} name={project.name} />

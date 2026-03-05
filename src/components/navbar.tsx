@@ -30,12 +30,12 @@ export const Navbar = () => {
   const { title, description } = pathnameMap[pathnameKey] || defaultMap;
 
   return (
-    <nav className="border-b border-neutral-200 dark:border-slate-700 pt-4 px-6 py-4 flex items-center justify-between bg-white dark:bg-slate-900">
+    <nav className="h-[72px] border-b px-6 flex items-center justify-between bg-card">
       <div className="flex-col hidden lg:flex">
-        <h1 className="text-3xl font-bold text-foreground">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
           {title}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground">
           {description}
         </p>
       </div>

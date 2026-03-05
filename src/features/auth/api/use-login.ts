@@ -21,7 +21,19 @@ export const useLogin = () => {
       const response = await client.api.auth.login["$post"]({ json });
 
       if (!response.ok) {
-        throw new Error("Failed to login");
+        let message = "Failed to login";
+        try {
+          const payload = await response.json();
+          if (payload && typeof payload === "object" && "error" in payload) {
+            const errorMessage = payload.error;
+            if (typeof errorMessage === "string" && errorMessage.trim()) {
+              message = errorMessage;
+            }
+          }
+        } catch {
+          message = "Failed to login";
+        }
+        throw new Error(message);
       }
 
       return await response.json();
@@ -31,8 +43,8 @@ export const useLogin = () => {
       router.refresh();
       queryClient.invalidateQueries({ queryKey: ["current"] });
     },
-    onError: () => {
-      toast.error("Failed to log in");
+    onError: (error) => {
+      toast.error(error.message || "Failed to log in");
     },
   });
 

@@ -5,20 +5,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border shadow-sm hover:shadow-md",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border shadow-sm",
   {
     variants: {
       variant: {
         primary:
-          "bg-gradient-to-b from-accent to-blue-700 text-accent-foreground hover:from-blue-600 hover:to-blue-800 border-accent/30",
+          "bg-accent text-accent-foreground border-accent/60 hover:bg-accent/90",
         destructive:
-          "bg-gradient-to-b from-red-600 to-red-700 text-destructive-foreground hover:from-red-700 hover:to-red-800 border-red-600/30",
+          "bg-destructive text-destructive-foreground border-destructive/60 hover:bg-destructive/90",
         outline:
-          "border border-neutral-300 bg-background hover:bg-accent/5 hover:border-accent/50",
+          "border-input bg-background hover:bg-accent/5 hover:border-accent/40",
         secondary:
-          "bg-neutral-100 text-black hover:bg-neutral-200",
+          "bg-secondary text-secondary-foreground border-transparent hover:bg-secondary/80",
         ghost: "border-transparent shadow-none hover:bg-accent/10",
-        muted: "bg-neutral-200 text-neutral-600 hover:bg-neutral-200/80",
+        muted: "bg-muted text-muted-foreground border-transparent hover:bg-muted/80",
         teritary: "bg-accent/10 text-accent border-transparent hover:bg-accent/20 shadow-none"
       },
       size: {

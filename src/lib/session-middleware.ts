@@ -24,7 +24,7 @@ type AdditionalContext = {
     storage: StorageType;
     users: UsersType;
     user: Models.User<Models.Preferences>;
-  };
+  };  
 };
 
 export const sessionMiddleware = createMiddleware<AdditionalContext>(
@@ -45,7 +45,12 @@ export const sessionMiddleware = createMiddleware<AdditionalContext>(
     const databases = new Databases(client);
     const storage = new Storage(client);
 
-    const user = await account.get();
+    let user: Models.User<Models.Preferences>;
+    try {
+      user = await account.get();
+    } catch {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
 
     c.set("account", account);
     c.set("databases", databases);

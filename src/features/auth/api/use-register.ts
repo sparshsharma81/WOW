@@ -21,7 +21,19 @@ export const useRegister = () => {
       const response = await client.api.auth.register["$post"]({ json });
 
       if (!response.ok) {
-        throw new Error("Failed to register");
+        let message = "Failed to register";
+        try {
+          const payload = await response.json();
+          if (payload && typeof payload === "object" && "error" in payload) {
+            const errorMessage = payload.error;
+            if (typeof errorMessage === "string" && errorMessage.trim()) {
+              message = errorMessage;
+            }
+          }
+        } catch {
+          message = "Failed to register";
+        }
+        throw new Error(message);
       }
 
       return await response.json();
@@ -31,8 +43,8 @@ export const useRegister = () => {
       router.refresh();
       queryClient.invalidateQueries({ queryKey: ["current"] });
     },
-    onError: () => {
-      toast.error("Failed to register");
+    onError: (error) => {
+      toast.error(error.message || "Failed to register");
     }
   });
 
