@@ -1,3 +1,39 @@
+## 📌 About
+
+**WOW** is a modern **Jira-inspired collaborative workspace and task management platform** built with **Next.js, Hono, and Appwrite**.  
+It enables teams to organize projects, manage tasks, and collaborate efficiently through a structured workspace system.
+
+The application provides a complete productivity workflow including **workspace management, project tracking, task boards, analytics, and team collaboration tools**. Users can manage tasks through **Kanban, Table, and Calendar views**, track project progress, and collaborate within shared workspaces.
+
+The project follows a **feature-driven architecture** with a scalable backend API powered by **Hono and Appwrite**, while the frontend leverages **Next.js App Router, TanStack Query, and Tailwind CSS** for a fast and responsive user experience.
+
+This project demonstrates a **production-style SaaS architecture**, including authentication, role-based access control, modular API design, and scalable state management.
+
+---
+
+## ✨ Key Highlights
+
+- Jira-like **workspace management**
+- **Project and task tracking system**
+- **Kanban, Table, and Calendar task views**
+- **Workspace invitations and team collaboration**
+- **Analytics dashboards** for projects and workspaces
+- **Authentication and session management**
+- **Feature-based scalable architecture**
+
+---
+
+## 🧩 Core Features
+
+- 🔐 **Authentication** – Sign up, sign in, logout, and user session management  
+- 🏢 **Workspaces** – Create and manage collaborative team spaces  
+- 📁 **Projects** – Organize work into projects with analytics  
+- ✅ **Tasks** – Create, update, filter, and track tasks  
+- 📊 **Analytics** – Workspace and project performance insights  
+- 📅 **Multiple Task Views** – Kanban, Table, and Calendar layouts  
+- 👥 **Team Collaboration** – Member roles, invitations, and permissions  
+- 📱 **Responsive Dashboard** – Optimized for desktop and mobile  
+
 # WOW Project Documentation
 
 Comprehensive technical documentation for the `my-app` workspace (Next.js + Hono + Appwrite).
@@ -22,7 +58,36 @@ WOW is a collaborative workspace/task management application with:
 - **Validation:** Zod + `@hono/zod-validator`
 - **Utilities:** date-fns, react-hook-form, nuqs, recharts, react-big-calendar
 
-## 3) Runbook
+## 3) Architecture Diagrams
+
+This section contains core architecture visuals used for technical walkthroughs, onboarding, and design reviews.
+
+- **High-Level Design (HLD):** System-level component and interaction overview.
+- **Low-Level Design (LLD):** Internal module interactions and execution flow.
+- **Context Diagram:** External actors/services and system boundaries.
+- **Database Design (ERD):** Entity relationships and domain data model.
+- **Class Diagram:** Core domain objects, responsibilities, and relationships.
+- **Sequence Diagram:** End-to-end request lifecycle for a representative flow.
+
+### High-Level Design (HLD)
+![High-Level Design (HLD)](<docs/images/High-Level Design (HLD).png>)
+
+### Low-Level Design (LLD)
+![Low-Level Design (LLD)](<docs/images/Low-Level Design (LLD).png>)
+
+### Context Diagram (System Context)
+![Context Diagram (System Context)](<docs/images/Context Diagram (System Context).png>)
+
+### Database Design (ERD)
+![Database Design (ERD)](<docs/images/Database Design (ERD).png>)
+
+### Class Diagram (Domain Model)
+![Class Diagram (Domain Model)](<docs/images/Class Diagram (Domain Model).png>)
+
+### Sequence Diagram (End-to-End Use Case)
+![Sequence Diagram (End-to-End Use Case)](<docs/images/Sequence Diagram (End-to-End Use Case).png>)
+
+## 4) Runbook
 
 ### Development
 
@@ -38,7 +103,7 @@ npm run build
 npm run start
 ```
 
-## 4) Environment Variables
+## 5) Environment Variables
 
 Defined in `.env.local`:
 
@@ -55,7 +120,7 @@ Defined in `.env.local`:
 
 ---
 
-## 5) Full File Catalog (Every File + Purpose)
+## 6) Full File Catalog (Every File + Purpose)
 
 ### Root files
 
@@ -281,7 +346,7 @@ Defined in `.env.local`:
 
 ---
 
-## 6) Architectural Notes
+## 7) Architectural Notes
 
 1. **Frontend API calls** use hooks under `src/features/**/api/*` via RPC client (`src/lib/rpc.ts`).
 2. **Backend endpoints** are feature-local Hono routers under `src/features/**/server/route.ts`.
@@ -289,7 +354,7 @@ Defined in `.env.local`:
 4. **Appwrite IDs** should be maintained in `.env.local` and consumed via `src/config.ts`.
 5. **Domain ownership** is feature-oriented (`auth`, `workspaces`, `projects`, `tasks`, `members`).
 
-## 7) Maintenance Guidance
+## 8) Maintenance Guidance
 
 - Add new files to the relevant feature folder and update this README catalog.
 - Keep API hooks (`api/*`) and backend routes (`server/route.ts`) consistent for payload shape.
