@@ -10,6 +10,37 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { getMember } from "../utils";
 import { Member, MemberRole } from "../types";
 
+const looksLikeId = (value?: string | null) => {
+  if (!value) return false;
+
+  const normalized = value.trim();
+  if (!normalized) return false;
+
+  return /^[a-z0-9]{16,}$/i.test(normalized);
+};
+
+const toTitleCase = (value: string) =>
+  value
+    .split(" ")
+    .filter(Boolean)
+    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1).toLowerCase())
+    .join(" ");
+
+const getDisplayName = (name?: string | null, email?: string | null) => {
+  const safeName = name?.trim();
+  if (safeName && !looksLikeId(safeName)) {
+    return safeName;
+  }
+
+  const emailPrefix = email?.split("@")[0]?.trim();
+  if (emailPrefix) {
+    const formatted = emailPrefix.replace(/[._-]+/g, " ").trim();
+    return formatted ? toTitleCase(formatted) : email!;
+  }
+
+  return "Member";
+};
+
 const app = new Hono()
   .get(
     "/",
@@ -43,7 +74,7 @@ const app = new Hono()
 
           return {
             ...member,
-            name: user.name || user.email,
+            name: getDisplayName(user.name, user.email),
             email: user.email,
           }
         })
