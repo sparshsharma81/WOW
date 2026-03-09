@@ -15,6 +15,8 @@ const allowedOrigins = new Set(
     process.env.CORS_ALLOWED_ORIGINS,
     process.env.NEXT_PUBLIC_APP_URL,
     "https://sparsh10.vercel.app",
+    "https://sparshwow.vercel.app",
+    "https://wowsparsh.vercel.app",
   ]
     .flatMap((value) => (value ? value.split(",") : []))
     .map((origin) => origin.trim().replace(/\/+$/, ""))
