@@ -2,4 +2,5 @@ import { hc } from "hono/client";
 
 import { AppType } from "@/app/api/[[...route]]/route";
 
-export const client = hc<AppType>(process.env.NEXT_PUBLIC_APP_URL! || "http://localhost:3000");
+// Force same-origin requests so auth cookies are shared with Next.js server components.
+export const client = hc<AppType>("");
