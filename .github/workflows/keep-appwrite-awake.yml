@@ -13,7 +13,7 @@ jobs:
       - name: Decide whether ping is due
         id: gate
         env:
-          KEEP_ALIVE_URL: ${{ secrets.KEEP_ALIVE_URL }}
+          KEEP_ALIVE_URL: ${{ secrets.KEEP_ALIVE_URL || vars.KEEP_ALIVE_URL }}
           KEEP_ALIVE_TOKEN: ${{ secrets.KEEP_ALIVE_TOKEN }}
           KEEP_ALIVE_INTERVAL: ${{ vars.KEEP_ALIVE_INTERVAL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
       - name: Call keep-alive endpoint
         if: steps.gate.outputs.should_ping == 'true'
         env:
-          KEEP_ALIVE_URL: ${{ secrets.KEEP_ALIVE_URL }}
+          KEEP_ALIVE_URL: ${{ secrets.KEEP_ALIVE_URL || vars.KEEP_ALIVE_URL }}
           KEEP_ALIVE_TOKEN: ${{ secrets.KEEP_ALIVE_TOKEN }}
         run: |
           curl -fsS \
