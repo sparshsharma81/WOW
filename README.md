@@ -11,6 +11,20 @@ This project demonstrates a **production-style SaaS architecture**, including au
 
 ---
 
+## 🌐 Live Demo
+
+- **Website**: https://sparshwow.vercel.app  
+
+> ⚠️ Backend is hosted on **Render (free tier)** — first load may take **30–40 seconds** due to cold start.
+
+---
+
+## 📸 Preview
+
+<img src="https://github.com/sparshsharma81/WOW/blob/main/docs/wow.gif?raw=true" width="100%" />
+
+---
+
 ## ✨ Key Highlights
 
 - Jira-like **workspace management**
