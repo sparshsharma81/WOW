@@ -11,6 +11,20 @@ This project demonstrates a **production-style SaaS architecture**, including au
 
 ---
 
+## 🌐 Live Demo
+
+- **Website**: https://sparshwow.vercel.app  
+
+> ⚠️ Backend is hosted on **Render (free tier)** — first load may take **30–40 seconds** due to cold start.
+
+---
+
+## 📸 Preview
+
+<img src="https://github.com/sparshsharma81/WOW/blob/main/docs/wow.gif?raw=true" width="100%" />
+
+---
+
 ## ✨ Key Highlights
 
 - Jira-like **workspace management**
@@ -117,6 +131,61 @@ Defined in `.env.local`:
 - `NEXT_PUBLIC_APPWRITE_PROJECT_ID` / `NEXT_PUBLIC_APPWRITE_PROJECTS_ID` (projects collection id)
 - `NEXT_PUBLIC_APPWRITE_TASKS_ID`
 - `NEXT_APPWRITE_KEY`
+
+Keep-alive related variables:
+
+- `KEEP_ALIVE_URL` (used in local testing only)
+- `KEEP_ALIVE_TOKEN`
+- `KEEP_ALIVE_INTERVAL` (milliseconds)
+
+---
+
+## 5.1) Keep Appwrite Awake (GitHub Workflow)
+
+This project includes an automated keep-alive workflow:
+
+- Workflow file: `.github/workflows/keep-appwrite-awake.yml`
+- Endpoint: `src/app/api/keep-alive/route.ts`
+
+How it works:
+
+- GitHub Actions runs hourly.
+- It checks the last successful run time.
+- It sends a keep-alive ping only when elapsed time is greater than or equal to `KEEP_ALIVE_INTERVAL`.
+
+Important:
+
+- `.env.local` is not available inside GitHub Actions.
+- Configure values in GitHub repository **Secrets and variables**.
+
+Required GitHub settings (`Settings -> Secrets and variables -> Actions`):
+
+- Repository Variable: `KEEP_ALIVE_URL=https://sparshwow.vercel.app/api/keep-alive`
+- Repository Variable: `KEEP_ALIVE_INTERVAL=345600000`
+- Repository Secret: `KEEP_ALIVE_TOKEN=<your-random-token>`
+
+Required Vercel environment variable:
+
+- `KEEP_ALIVE_TOKEN=<same value as GitHub secret>`
+
+Manual test:
+
+- Open Actions tab.
+- Run `Keep Appwrite Awake` using `workflow_dispatch`.
+- Confirm job logs show either `skipping ping` (not due yet) or `Keep-alive ping succeeded`.
+
+Troubleshooting:
+
+- `KEEP_ALIVE_URL secret is missing`:
+Set `KEEP_ALIVE_URL` in GitHub repo Variables or Secrets.
+- `KEEP_ALIVE_TOKEN secret is missing`:
+Set `KEEP_ALIVE_TOKEN` in GitHub repo Secrets.
+- `KEEP_ALIVE_INTERVAL must be an integer (milliseconds)`:
+Set `KEEP_ALIVE_INTERVAL` as a numeric GitHub Variable (for example `345600000`).
+- `unauthorized` from `/api/keep-alive`:
+Ensure Vercel `KEEP_ALIVE_TOKEN` exactly matches GitHub Secret `KEEP_ALIVE_TOKEN`.
+- `No previous successful runs found; ping is due.`:
+Expected on first run; workflow will ping immediately and then use interval-based gating.
 
 ---
 
