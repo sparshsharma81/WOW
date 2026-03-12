@@ -24,22 +24,11 @@ export const debugMiddleware = createMiddleware(async (c, next) => {
   };
   
   console.log("[DEBUG MIDDLEWARE] Incoming Request:", JSON.stringify(debugInfo, null, 2));
-  
-  // Add response interceptor logging
-  const originalText = c.text.bind(c);
-  const originalJson = c.json.bind(c);
-  
-  c.text = function(...args) {
-    const duration = Date.now() - startTime;
-    console.log(`[DEBUG MIDDLEWARE] Response: ${c.req.method} ${c.req.path} - ${duration}ms`);
-    return originalText(...args);
-  };
-  
-  c.json = function(...args) {
-    const duration = Date.now() - startTime;
-    console.log(`[DEBUG MIDDLEWARE] Response: ${c.req.method} ${c.req.path} - ${duration}ms`);
-    return originalJson(...args);
-  };
-  
+
   await next();
+
+  const duration = Date.now() - startTime;
+  console.log(
+    `[DEBUG MIDDLEWARE] Response: ${c.req.method} ${c.req.path} - ${c.res.status} - ${duration}ms`,
+  );
 });
