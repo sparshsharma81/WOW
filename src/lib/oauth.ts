@@ -34,27 +34,51 @@ const getBaseUrl = async () => {
 };
 
 export async function signUpWithGithub() {
-	const { account } = await createAdminClient();
-  const baseUrl = await getBaseUrl();
-  
-	const redirectUrl = await account.createOAuth2Token(
-		OAuthProvider.Github,
-		`${baseUrl}/oauth`,
-		`${baseUrl}/sign-up`,
-	);
+  try {
+    const { account } = await createAdminClient();
+    const baseUrl = await getBaseUrl();
 
-	return redirect(redirectUrl);
+    const redirectUrl = await account.createOAuth2Token(
+      OAuthProvider.Github,
+      `${baseUrl}/oauth`,
+      `${baseUrl}/sign-up`,
+    );
+
+    return redirect(redirectUrl);
+  } catch (error) {
+    console.error("[OAuth][GitHub] Failed to create OAuth token", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      baseUrl: await getBaseUrl(),
+      hasEndpoint: Boolean(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT),
+      hasProject: Boolean(process.env.NEXT_PUBLIC_APPWRITE_PROJECT),
+      hasApiKey: Boolean(process.env.NEXT_APPWRITE_KEY),
+    });
+
+    return redirect("/sign-in?error=github_oauth_failed");
+  }
 };
 
 export async function signUpWithGoogle() {
-	const { account } = await createAdminClient();
-  const baseUrl = await getBaseUrl();
+  try {
+    const { account } = await createAdminClient();
+    const baseUrl = await getBaseUrl();
 
-	const redirectUrl = await account.createOAuth2Token(
-		OAuthProvider.Google,
-		`${baseUrl}/oauth`,
-		`${baseUrl}/sign-up`,
-	);
+    const redirectUrl = await account.createOAuth2Token(
+      OAuthProvider.Google,
+      `${baseUrl}/oauth`,
+      `${baseUrl}/sign-up`,
+    );
 
-	return redirect(redirectUrl);
+    return redirect(redirectUrl);
+  } catch (error) {
+    console.error("[OAuth][Google] Failed to create OAuth token", {
+      message: error instanceof Error ? error.message : "Unknown error",
+      baseUrl: await getBaseUrl(),
+      hasEndpoint: Boolean(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT),
+      hasProject: Boolean(process.env.NEXT_PUBLIC_APPWRITE_PROJECT),
+      hasApiKey: Boolean(process.env.NEXT_APPWRITE_KEY),
+    });
+
+    return redirect("/sign-in?error=google_oauth_failed");
+  }
 };
