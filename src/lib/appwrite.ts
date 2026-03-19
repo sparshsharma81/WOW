@@ -5,6 +5,7 @@ import {
   Account,
   Users,
   Databases,
+  TablesDB,
 } from "node-appwrite";
 import { cookies } from "next/headers";
 
@@ -18,7 +19,7 @@ export async function createSessionClient() {
   const cookieStore = await cookies();
   const session = cookieStore.get(AUTH_COOKIE);
 
-  if (!session || !session.value) {
+  if (!session?.value) {
     throw new Error("Unauthorized");
   }
 
@@ -30,6 +31,9 @@ export async function createSessionClient() {
     },
     get databases() {
       return new Databases(client);
+    },
+    get tablesDB() {
+      return new TablesDB(client);
     }
   };
 };
@@ -46,6 +50,12 @@ export async function createAdminClient() {
     },
     get users() {
       return new Users(client);
+    },
+    get databases() {
+      return new Databases(client);
+    },
+    get tablesDB() {
+      return new TablesDB(client);
     }
   };
 };

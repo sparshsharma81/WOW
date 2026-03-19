@@ -136,7 +136,6 @@ Keep-alive related variables:
 
 - `KEEP_ALIVE_URL` (used in local testing only)
 - `KEEP_ALIVE_TOKEN`
-- `KEEP_ALIVE_INTERVAL` (milliseconds)
 
 ---
 
@@ -149,9 +148,9 @@ This project includes an automated keep-alive workflow:
 
 How it works:
 
-- GitHub Actions runs hourly.
-- It checks the last successful run time.
-- It sends a keep-alive ping only when elapsed time is greater than or equal to `KEEP_ALIVE_INTERVAL`.
+- GitHub Actions runs every 15 minutes.
+- It adds a short random delay (jitter) before calling the endpoint.
+- It retries transient failures and validates the endpoint response.
 
 Important:
 
@@ -161,7 +160,6 @@ Important:
 Required GitHub settings (`Settings -> Secrets and variables -> Actions`):
 
 - Repository Variable: `KEEP_ALIVE_URL=https://sparshwow.vercel.app/api/keep-alive`
-- Repository Variable: `KEEP_ALIVE_INTERVAL=345600000`
 - Repository Secret: `KEEP_ALIVE_TOKEN=<your-random-token>`
 
 Required Vercel environment variable:
@@ -172,7 +170,7 @@ Manual test:
 
 - Open Actions tab.
 - Run `Keep Appwrite Awake` using `workflow_dispatch`.
-- Confirm job logs show either `skipping ping` (not due yet) or `Keep-alive ping succeeded`.
+- Confirm job logs show `Keep-alive ping succeeded` and HTTP 200.
 
 Troubleshooting:
 
@@ -180,12 +178,10 @@ Troubleshooting:
 Set `KEEP_ALIVE_URL` in GitHub repo Variables or Secrets.
 - `KEEP_ALIVE_TOKEN secret is missing`:
 Set `KEEP_ALIVE_TOKEN` in GitHub repo Secrets.
-- `KEEP_ALIVE_INTERVAL must be an integer (milliseconds)`:
-Set `KEEP_ALIVE_INTERVAL` as a numeric GitHub Variable (for example `345600000`).
 - `unauthorized` from `/api/keep-alive`:
 Ensure Vercel `KEEP_ALIVE_TOKEN` exactly matches GitHub Secret `KEEP_ALIVE_TOKEN`.
-- `No previous successful runs found; ping is due.`:
-Expected on first run; workflow will ping immediately and then use interval-based gating.
+- Non-200 response from `/api/keep-alive`:
+Check Vercel environment variables (`KEEP_ALIVE_TOKEN`, `NEXT_APPWRITE_KEY`, Appwrite IDs) and re-run workflow.
 
 ---
 

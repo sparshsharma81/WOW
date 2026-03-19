@@ -2,26 +2,25 @@ name: Keep Appwrite Awake
 
 on:
   schedule:
-    # Run frequently, but gate the ping by KEEP_ALIVE_INTERVAL.
-    - cron: "0 * * * *"
+    # Run every 15 minutes for reliable anti-idle traffic.
+    - cron: "*/15 * * * *"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - name: Decide whether ping is due
-        id: gate
+      - name: Validate keep-alive configuration
         env:
           KEEP_ALIVE_URL: ${{ secrets.KEEP_ALIVE_URL || vars.KEEP_ALIVE_URL }}
           KEEP_ALIVE_TOKEN: ${{ secrets.KEEP_ALIVE_TOKEN }}
-          KEEP_ALIVE_INTERVAL: ${{ vars.KEEP_ALIVE_INTERVAL }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          WORKFLOW_FILE: keep-appwrite-awake.yml
         run: |
           if [ -z "$KEEP_ALIVE_URL" ]; then
-            echo "KEEP_ALIVE_URL secret is missing"
+            echo "KEEP_ALIVE_URL is missing"
             exit 1
           fi
 
@@ -30,45 +29,40 @@ jobs:
             exit 1
           fi
 
-          INTERVAL_MS="${KEEP_ALIVE_INTERVAL:-345600000}"
-
-          if ! [[ "$INTERVAL_MS" =~ ^[0-9]+$ ]]; then
-            echo "KEEP_ALIVE_INTERVAL must be an integer (milliseconds)"
-            exit 1
-          fi
-
-          RUNS_JSON=$(curl -fsS \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW_FILE/runs?status=success&per_page=1")
-
-          LAST_SUCCESS=$(echo "$RUNS_JSON" | jq -r '.workflow_runs[0].run_started_at // empty')
-
-          if [ -z "$LAST_SUCCESS" ]; then
-            echo "No previous successful runs found; ping is due."
-            echo "should_ping=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          NOW_MS=$(date +%s%3N)
-          LAST_MS=$(date -d "$LAST_SUCCESS" +%s%3N)
-          ELAPSED_MS=$((NOW_MS - LAST_MS))
-
-          if [ "$ELAPSED_MS" -ge "$INTERVAL_MS" ]; then
-            echo "Elapsed ${ELAPSED_MS}ms >= interval ${INTERVAL_MS}ms; ping is due."
-            echo "should_ping=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Elapsed ${ELAPSED_MS}ms < interval ${INTERVAL_MS}ms; skipping ping."
-            echo "should_ping=false" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Add jitter to avoid bot-like timing
+        run: |
+          SLEEP_SECONDS=$((RANDOM % 240))
+          echo "Sleeping ${SLEEP_SECONDS}s before ping"
+          sleep "$SLEEP_SECONDS"
 
       - name: Call keep-alive endpoint
-        if: steps.gate.outputs.should_ping == 'true'
         env:
           KEEP_ALIVE_URL: ${{ secrets.KEEP_ALIVE_URL || vars.KEEP_ALIVE_URL }}
           KEEP_ALIVE_TOKEN: ${{ secrets.KEEP_ALIVE_TOKEN }}
         run: |
-          curl -fsS \
+          RESPONSE_FILE=$(mktemp)
+
+          HTTP_STATUS=$(curl -sS -o "$RESPONSE_FILE" -w "%{http_code}" \
+            --retry 3 \
+            --retry-delay 5 \
+            --retry-all-errors \
             -H "x-keep-alive-token: $KEEP_ALIVE_TOKEN" \
-            "$KEEP_ALIVE_URL" > /dev/null
+            "$KEEP_ALIVE_URL")
+
+          echo "HTTP status: $HTTP_STATUS"
+          cat "$RESPONSE_FILE"
+
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Keep-alive ping failed with status $HTTP_STATUS"
+            exit 1
+          fi
+
+          if command -v jq >/dev/null 2>&1; then
+            OK=$(jq -r '.ok // false' "$RESPONSE_FILE")
+            if [ "$OK" != "true" ]; then
+              echo "Keep-alive endpoint returned ok=false"
+              exit 1
+            fi
+          fi
+
           echo "Keep-alive ping succeeded"

@@ -23,13 +23,27 @@ export async function GET(request: Request) {
   }
 
   try {
-    const { users } = await createAdminClient();
+    const { users, tablesDB } = await createAdminClient();
 
-    // A tiny read against Appwrite keeps the project active.
+    const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+    const workspaceTableId = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID;
+
+    // Perform meaningful traffic: read users and read one collection page.
     await users.list();
 
+    if (databaseId && workspaceTableId) {
+      await tablesDB.listRows({
+        databaseId,
+        tableId: workspaceTableId,
+      });
+    }
+
     return NextResponse.json(
-      { ok: true, provider: "appwrite" },
+      {
+        ok: true,
+        provider: "appwrite",
+        dbReadAttempted: Boolean(databaseId && workspaceTableId),
+      },
       {
         status: 200,
         headers: {
