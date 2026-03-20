@@ -185,6 +185,64 @@ Check Vercel environment variables (`KEEP_ALIVE_TOKEN`, `NEXT_APPWRITE_KEY`, App
 
 ---
 
+## 5.2) Security Scan (GitHub Workflow)
+
+This project includes an automated security workflow:
+
+- Workflow file: `.github/workflows/security-scan.yml`
+
+What it does:
+
+- Runs `npm audit --audit-level=high` to fail on high/critical dependency vulnerabilities.
+- Runs GitHub CodeQL analysis for JavaScript/TypeScript and uploads findings to Security.
+
+When it runs:
+
+- On push to `main`
+- On pull requests targeting `main`
+- Daily at 03:30 UTC
+- Manual run via `workflow_dispatch`
+
+How to use:
+
+- Open `Actions` tab and run `Security Scan`.
+- Open `Security -> Code scanning alerts` to review CodeQL results.
+
+---
+
+## 5.3) PR Preview Environment (GitHub Workflow)
+
+This project includes an automated preview environment workflow:
+
+- Workflow file: `.github/workflows/preview.yml`
+
+Purpose:
+
+- Create a temporary preview deployment for each pull request.
+- Let reviewers test features live before merge.
+
+How it works:
+
+- Triggers on PR `opened`, `synchronize`, and `reopened`.
+- Builds and deploys the branch to Vercel preview.
+- Posts a sticky PR comment with the latest preview URL.
+- Cancels older in-progress runs for the same PR.
+- Creates a stable alias per PR and removes it automatically when the PR is closed.
+
+Required GitHub Secrets (`Settings -> Secrets and variables -> Actions`):
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+Manual test:
+
+- Open a pull request against `main`.
+- Wait for `PR Preview Environment` workflow to complete.
+- Open the preview URL from the PR comment.
+
+---
+
 ## 6) Full File Catalog (Every File + Purpose)
 
 ### Root files
