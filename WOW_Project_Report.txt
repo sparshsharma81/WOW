@@ -1,0 +1,147 @@
+WOW (Business Management Tool)
+
+Problem Statement
+Modern organizations frequently depend on separate tools for login and identity, team coordination, project planning, task tracking, file handling, and progress reporting. While each tool may solve one narrow problem, the overall result is usually fragmented. Teams switch between screens, duplicate records, lose context, and spend extra time reconciling information that should already be connected. As a project grows, this fragmentation becomes more expensive because it affects visibility, accountability, and delivery speed.
+
+WOW is designed to solve this problem by bringing essential business management workflows into one structured platform. The system provides workspace-based collaboration, project organization, task lifecycle management, member administration, and analytics in a single application. Instead of moving between disconnected tools, users can sign in, join a workspace, create projects, manage work items in multiple views, and monitor progress from one interface. This makes day-to-day coordination more predictable and reduces unnecessary operational overhead.
+
+The problem is not only about organizing tasks. It is also about maintaining a controlled collaboration environment where people see only the data they are allowed to access, where roles are clear, and where work remains tied to the correct workspace and project context. WOW addresses that need with a business management structure that supports authorization, modular workflows, and scalable product growth.
+
+Title of Project
+WOW (Business Management Tool)
+
+Objectives & Key Learning
+The primary objective of WOW is to deliver a practical business management environment that helps teams plan, execute, and review work in a structured way. The application is intended to reduce communication gaps and administrative friction by combining authentication, workspaces, projects, tasks, member management, and analytics into one coherent product.
+
+From a product standpoint, the system is meant to support both operational use and collaboration discipline. Teams can create a workspace for a specific group or initiative, manage membership through invite codes, organize work into projects, and track tasks through different visual representations. This gives users flexibility while still keeping the process centralized and accountable.
+
+The key learning outcomes from this project include:
+1. Designing a feature-based web application using the Next.js App Router.
+2. Building a modular backend API with Hono and organizing routes by business domain.
+3. Integrating Appwrite for authentication, document storage, and session management.
+4. Implementing role-based and workspace-based access control for collaborative data.
+5. Using validation schemas to protect API boundaries and form inputs.
+6. Structuring reusable UI components so the interface remains consistent across screens.
+7. Managing client-server data flow with React Query and typed request hooks.
+8. Supporting multiple task views such as Kanban, Table, and Calendar to improve usability.
+9. Designing a scalable codebase where route files, features, shared libraries, and UI primitives remain separated.
+10. Handling real-world application concerns such as query state, responsive design, and error states.
+
+Functional Requirements and Non-Functional Requirements
+Functional Requirements:
+1. The system shall allow users to register, sign in, sign out, and access their current authenticated session.
+2. The system shall allow authenticated users to create, view, update, and delete workspaces.
+3. The system shall allow workspace owners and authorized administrators to manage workspace membership.
+4. The system shall allow workspace members to join through invite codes where permitted.
+5. The system shall allow users to create, edit, view, and delete projects within a workspace.
+6. The system shall allow users to create, edit, view, filter, and delete tasks.
+7. The system shall support multiple task presentations, including Kanban, Table, and Calendar layouts.
+8. The system shall allow tasks to be filtered by workspace, project, assignee, due date, search term, and status.
+9. The system shall support bulk task updates and ordering behavior for task management flows.
+10. The system shall provide workspace-level and project-level analytics.
+11. The system shall allow users to manage workspace settings and project settings.
+12. The system shall allow users to view and interact with member information and role assignments.
+13. The system shall support route-based detail pages for workspaces, projects, and tasks.
+14. The system shall provide user interface feedback for loading, errors, and empty states.
+15. The system shall preserve data relationships between users, workspaces, projects, and tasks.
+
+Non-Functional Requirements:
+1. Security: User sessions shall be protected with secure cookies and validated on the server.
+2. Authorization: Users shall only access resources they are permitted to view or modify.
+3. Performance: Common operations such as task viewing and project loading should respond efficiently under normal usage.
+4. Scalability: The feature-based architecture should support the addition of new modules without major refactoring.
+5. Reliability: The application should handle API failures and session issues gracefully.
+6. Maintainability: The codebase should remain modular, typed, and easy to extend by future developers.
+7. Usability: The interface should be easy to use on desktop and mobile screens.
+8. Consistency: Shared UI primitives and hooks should produce a predictable user experience.
+9. Compatibility: The application should work reliably in modern browsers and support the Next.js deployment model.
+10. Data Integrity: Task, project, and member changes should remain scoped to the correct workspace boundaries.
+11. Modularity: Business rules should remain inside feature modules rather than being spread across unrelated files.
+12. Accessibility: The interface should remain readable and navigable for a broad user base.
+13. Responsiveness: The application should adapt to different viewport sizes without losing core functionality.
+14. Extensibility: The design should allow future modules such as comments, notifications, or reporting exports.
+
+High Level and Low-Level Design
+High-Level Design:
+WOW is built as a layered collaborative web application. The presentation layer is a Next.js frontend that renders authentication pages, dashboard pages, workspace pages, and standalone administrative flows. The request layer is powered by a Hono API mounted inside Next.js, which receives client requests and forwards them to feature-specific handlers. The data layer uses Appwrite for authentication, session state, database documents, and file-backed assets.
+
+At a system level, the application works as follows:
+User -> Next.js UI -> typed client hook or RPC call -> Hono API route -> feature server handler -> session middleware -> Appwrite service -> response mapped back to the UI.
+
+This structure provides a clean separation between display logic, request orchestration, business rules, and persistent storage. It also makes the application easier to extend because each layer has a narrow responsibility. Frontend components focus on interaction and presentation, while server routes enforce validation, authorization, and data shaping.
+
+Low-Level Design:
+The repository follows a feature-first architecture. Each business domain has its own folder with API hooks, schemas, components, types, server routes, and helper utilities. This reduces coupling and makes it easier to understand where a particular behavior lives.
+
+The low-level execution model is:
+1. A page or component renders a workspace, project, or task screen.
+2. A form, modal, board, or table component triggers a feature hook.
+3. The hook sends a request through the typed RPC client.
+4. The API route dispatches the request to the correct Hono sub-route.
+5. Session middleware loads user context and enforces authentication.
+6. The feature server route validates the payload and applies business rules.
+7. Appwrite handles document reads, writes, authentication, and file-backed data.
+8. The server maps the response into a format that is convenient for the UI.
+9. The client updates visible state, cache data, and route-driven UI.
+
+Important runtime paths include:
+1. Authentication pages use sign-in and sign-up forms to create sessions and redirect users into the application.
+2. The dashboard landing page resolves the current user and routes them to a workspace or create-workspace flow.
+3. Workspace pages load workspace metadata, project lists, member lists, and analytics summaries.
+4. Project pages expose project editing, analytics, and deletion flows inside the selected workspace.
+5. Task pages support list, table, kanban, and calendar experiences with filtering and task details.
+6. Standalone pages handle join-invite flows, workspace settings, project settings, and member administration outside the main dashboard shell.
+
+This design is practical because it supports both user-facing clarity and engineering maintainability. The frontend remains responsive and composable, while the backend remains modular and domain-focused.
+
+Advantages and non-advantages
+Advantages:
+1. The product consolidates authentication, collaboration, and execution tracking into a single application.
+2. The workspace-based model gives teams a clear organizational boundary for their data and responsibilities.
+3. Feature-based code organization makes development easier to understand and maintain.
+4. Multiple task views improve usability for different working styles and team preferences.
+5. Analytics help teams measure progress instead of relying only on manual status updates.
+6. Appwrite reduces backend setup complexity while still supporting a production-style data model.
+7. Hono provides a lightweight and structured API layer.
+8. Shared components and hooks create consistency across the product.
+9. The design supports role-based access, which is important for collaborative business tools.
+10. The system is suitable for iterative enhancement because each feature is isolated.
+
+Non-advantages:
+1. The application depends on external backend services, so service availability affects the user experience.
+2. Free-tier or low-capacity hosting may introduce slow cold starts and longer initial load times.
+3. The current implementation is focused on core operational workflows rather than highly advanced enterprise governance.
+4. Historical schema differences require compatibility handling in some areas, which increases maintenance effort.
+5. Advanced features such as notifications, audit trails, and comments are not the main strength of the current release.
+6. Real-time collaboration depth is limited compared with more specialized enterprise platforms.
+7. Heavy reporting and business intelligence features would need additional work if the product grows into a larger SaaS offering.
+
+Conclusion and Future Improvements
+WOW is a strong example of a modern business management platform that blends collaboration, task control, and project visibility into a single experience. It demonstrates how a carefully structured SaaS-style product can be organized around clear business domains while still remaining maintainable. The project shows attention to user authentication, workspace isolation, and reusable engineering patterns.
+
+The current design is already suitable for practical team operations, especially for groups that need a clear workspace model and flexible task views. It supports real-world workflows such as member management, project tracking, and task planning without forcing users to rely on separate tools for each step.
+
+Future improvements could include:
+1. Adding comments, attachments, and mentions to tasks for richer collaboration.
+2. Introducing notifications and activity timelines for better visibility.
+3. Expanding analytics with trend charts, workload summaries, and completion insights.
+4. Improving audit logs for workspace, project, and member changes.
+5. Adding custom roles and more advanced permission models.
+6. Providing export options such as PDF, CSV, or printable summaries.
+7. Improving offline resilience and optimistic updates for smoother task editing.
+8. Enhancing accessibility and keyboard navigation across dashboards and forms.
+9. Standardizing schema naming to reduce compatibility fallbacks.
+10. Introducing automation features such as task templates or recurring tasks.
+11. Adding richer search and sorting capabilities across workspaces and projects.
+12. Extending mobile behavior for users who manage work primarily on smaller screens.
+
+References
+1. Repository README and project overview in README.md.
+2. Architecture and folder guidance in docs/manual/architecture-and-structure.md.
+3. File inventory in docs/manual/file-index.md.
+4. Professional file catalog in docs/manual/file-catalog-professional.md.
+5. Root application structure in src/app.
+6. Auth, members, projects, tasks, and workspaces feature modules in src/features.
+7. Shared infrastructure and helpers in src/lib.
+8. Shared UI components and design primitives in src/components.
+9. API routing and server-side feature handlers in src/app/api/[[...route]]/route.ts and src/features/*/server/route.ts.
