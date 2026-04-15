@@ -1,0 +1,80 @@
+name: Lighthouse Performance Audit
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lighthouse:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Comment Lighthouse results on PR
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const fs = require('fs');
+            const lighthouseReport = require('./lhr.json');
+            
+            const scores = {
+              performance: lighthouseReport.categories.performance.score * 100,
+              accessibility: lighthouseReport.categories.accessibility.score * 100,
+              'best-practices': lighthouseReport.categories['best-practices'].score * 100,
+              seo: lighthouseReport.categories.seo.score * 100,
+            };
+            
+            const scoreColor = (score) => {
+              if (score >= 90) return '🟢';
+              if (score >= 50) return '🟡';
+              return '🔴';
+            };
+            
+            const comment = `## ⚡ Lighthouse Audit Results
+            
+            | Category | Score |
+            |----------|-------|
+            | Performance | ${scoreColor(scores.performance)} ${Math.round(scores.performance)} |
+            | Accessibility | ${scoreColor(scores.accessibility)} ${Math.round(scores.accessibility)} |
+            | Best Practices | ${scoreColor(scores['best-practices'])} ${Math.round(scores['best-practices'])} |
+            | SEO | ${scoreColor(scores.seo)} ${Math.round(scores.seo)} |
+            
+            [View detailed report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment,
+            });
+        continue-on-error: true
