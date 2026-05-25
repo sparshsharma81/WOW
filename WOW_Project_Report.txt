@@ -1,0 +1,82 @@
+Integrated Project Synopsis
+
+
+1. Project Statement:
+The proposed project, WOW (Business Management Tool), aims to develop a full-stack web-based collaboration and productivity platform that enables teams to manage workspaces, projects, tasks, and members from a single unified system. The platform allows users to register/login, create or join workspaces, organize projects, assign and track tasks, and analyze progress through workspace-level and project-level analytics.
+
+By leveraging modern technologies such as Next.js (App Router), Hono API routing, Appwrite (authentication, database, and storage), TypeScript, TailwindCSS, and TanStack Query, WOW consolidates planning, execution, and monitoring workflows into one application. This eliminates the need to switch across multiple disconnected tools for task tracking, team coordination, and project oversight. The platform is designed as a scalable and modular solution that improves productivity, accountability, and visibility for teams and administrators.
+
+
+2. Approximate Duration:
+90-120 hours (approximately 5-7 weeks)
+
+
+3. Proposed Project In-charge:
+Dr. Sunil Kumar Chawla / Dr. Divjot Singh
+
+
+4. Team Members:
+a. Vinayak Dhar - Roll No. 2310992243
+b. Yatin Goyal - Roll No. 2310992249
+c. Samarth Gupta - Roll No. 2310992518
+d. Rajat Saini - Roll No. 2310992188
+
+
+5. Check Point:
+a. Does the project statement result in a product? If yes, what type of product?
+Yes, the project results in a functional full-stack web application that provides a collaborative business and task management platform for teams, supporting workspace-based coordination and project execution.
+
+b. If it is a product, can a prototype be made? If not, what is it which we can produce that our teachers can evaluate?
+Yes, a working prototype can be developed where users can authenticate, create/join workspaces, manage projects, create and update tasks, invite members, and monitor analytics through dashboard views (Kanban, Table, Calendar).
+
+c. Does the project statement use multiple concepts to achieve the outcome? (yes/no)
+Yes, it integrates full-stack web development, authentication and session management, database-driven CRUD operations, API architecture, validation systems, role-based access control, and dashboard analytics.
+
+d. Does it have enough for team members to do sufficient amount of work? (yes/no)
+Yes, the project includes multiple modules such as authentication, workspace management, membership and invite flows, project lifecycle, task lifecycle, analytics dashboards, responsive UI, and API integration, ensuring sufficient and balanced workload distribution.
+
+
+6. Technical Nodes:
+- Frontend: Next.js (App Router), React.js, TypeScript, TailwindCSS, Shadcn/ui
+- Backend/API Layer: Hono routed through Next.js API endpoint
+- Database & Backend Services: Appwrite (Databases, Authentication, Storage)
+- State Management & Data Fetching: TanStack Query
+- Validation: Zod, React Hook Form
+- Architecture: Full-stack monolithic architecture with feature-based modular design
+- UI/UX Structure: Reusable component system with responsive layouts
+- DevOps & CI/CD: GitHub Actions, Vercel deployment
+
+
+7. Prerequisites:
+- Strong understanding of JavaScript, TypeScript, and React.js
+- Knowledge of Next.js (App Router) and full-stack web application architecture
+- Familiarity with backend routing concepts (Hono/REST-style APIs)
+- Understanding of authentication and authorization workflows
+- Basic understanding of Appwrite services (Auth, Databases, Storage)
+- Familiarity with schema validation and form handling (Zod, React Hook Form)
+- Knowledge of asynchronous data fetching and caching (TanStack Query)
+- Understanding of modular code organization and component reuse
+- Knowledge of Git, version control, and CI/CD fundamentals
+
+
+8. Material Required:
+- VS Code or any modern code editor, Node.js (v18+), and npm/yarn
+- Appwrite project setup (endpoint, project ID, database and collection IDs)
+- GitHub account for source control and collaboration
+- Vercel account for deployment
+- Laptop/PC with stable internet connection
+- Online technical documentation (Next.js, Appwrite, Hono, TailwindCSS, etc.)
+
+
+9. What could be the total cost of the project?
+The estimated cost of the project is approximately Rs.0-Rs.3000, depending on usage. Core technologies and frameworks used (Next.js, React, TailwindCSS, Hono, TypeScript) are free and open source. Optional costs may arise from managed backend and hosting usage (Appwrite cloud plans, Vercel paid usage, or third-party services) if traffic and storage exceed free-tier limits.
+
+
+10. Resources:
+- Official documentation for Next.js, React, TypeScript, and TailwindCSS
+- Appwrite documentation (authentication, database, storage, SDK usage)
+- Hono documentation for API route design and middleware patterns
+- TanStack Query documentation for client-side data synchronization
+- Zod and React Hook Form documentation for schema-driven form validation
+- GitHub repository and project README for implementation reference
+- GitHub Actions and Vercel deployment documentation

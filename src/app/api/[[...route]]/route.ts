@@ -7,6 +7,7 @@ import members from "@/features/members/server/route";
 import workspaces from "@/features/workspaces/server/route";
 import projects from "@/features/projects/server/route";
 import tasks from "@/features/tasks/server/route";
+import gemini from "@/features/gemini/server/route";
 
 const app = new Hono().basePath("/api");
 
@@ -48,6 +49,7 @@ const routes = app
   .route("/workspaces", workspaces)
   .route("/projects", projects)
   .route("/tasks", tasks)
+  .route("/gemini", gemini)
 
 export const GET = handle(app);
 export const POST = handle(app);

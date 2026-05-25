@@ -1,0 +1,170 @@
+Create a professional low-level architecture diagram for WOW (Business Management Tool). The diagram should show the internal structure of the system in much more detail than a high-level diagram. It should be suitable for an official software engineering report and should look clean, formal, and highly readable.
+
+Use a white or light background, rounded boxes, subtle shadows, precise labels, and clear directional arrows. The diagram must feel like a real engineering design diagram, not a generic illustration. Show internal modules, request flow, service boundaries, and data relationships.
+
+The application is a Jira-inspired collaborative workspace and task management platform built with Next.js, Hono, Appwrite, React Query, and a feature-first codebase. The low-level diagram should show how a user action moves through the system, how modules depend on each other, and how data is read or written.
+
+Include these detailed sections:
+
+1. User Interaction Layer
+- End User
+- Workspace Admin
+- Team Member
+- Browser UI
+- Form Components
+- Modal Components
+- Table / Kanban / Calendar Views
+- Sidebar / Navbar / Workspace Switcher
+
+2. Frontend State and Routing Layer
+- Next.js App Router
+- Route Groups: auth, dashboard, standalone
+- Page Components
+- Layout Components
+- Query Provider / React Query Cache
+- URL State and Route Parameters
+- Typed Feature Hooks
+- Shared UI Primitives
+
+3. Feature Modules
+Show each feature as its own internal block with its own subcomponents and hooks:
+- Auth Feature
+  - sign in form
+  - sign up form
+  - user session queries
+  - login/register/logout hooks
+- Workspaces Feature
+  - create workspace form
+  - edit workspace form
+  - join workspace form
+  - workspace analytics hooks
+  - invite code reset flow
+- Projects Feature
+  - create project modal and form
+  - edit project form
+  - project analytics hooks
+  - project avatar handling
+- Tasks Feature
+  - create task modal and form
+  - edit task modal and form
+  - filters
+  - kanban board
+  - table view
+  - calendar view
+  - bulk update handler
+  - task detail view
+- Members Feature
+  - member list
+  - member avatar
+  - update role flow
+  - delete member flow
+
+4. API and Business Logic Layer
+- Typed RPC Client
+- Next API Catch-All Route (/api/[[...route]])
+- Hono Router Entry Point
+- Feature Route Registration
+- Session Middleware
+- Validation Schemas (Zod)
+- Authorization Checks
+- Workspace Membership Checks
+- Role Checks
+- Error Mapping and Response Formatting
+
+5. Server-Side Feature Handlers
+Show each feature server route in detail:
+- Auth server route
+  - current user
+  - login
+  - register
+  - logout
+- Workspace server route
+  - list workspaces for current user
+  - create workspace
+  - update workspace
+  - delete workspace
+  - invite code generation
+  - join workspace
+  - workspace analytics
+- Project server route
+  - list projects by workspace
+  - create project
+  - update project
+  - delete project
+  - project analytics
+- Task server route
+  - list tasks with filters
+  - create task
+  - update task
+  - delete task
+  - bulk update tasks
+  - resolve project and assignee data
+- Member server route
+  - list members in workspace
+  - update member role
+  - delete member
+
+6. Data and Persistence Layer
+- Appwrite Account Service
+- Appwrite Users Service
+- Appwrite Databases
+- Appwrite Storage
+- Appwrite Session Store
+- Workspace Collection
+- Project Collection
+- Task Collection
+- Member Collection
+- Uploaded Image Data
+- Auth Cookie Session
+
+7. Relationship and Dependency Details
+Show the internal relationships clearly:
+- UI forms call feature hooks.
+- Feature hooks call the typed RPC client.
+- The RPC client sends requests to the Hono API.
+- The Hono API routes requests to the correct feature handler.
+- Session middleware loads the authenticated user.
+- Authorization checks verify workspace membership and roles.
+- Validation schemas verify payload shape and required fields.
+- Server handlers read and write Appwrite documents.
+- Appwrite returns documents and session/user data.
+- React Query caches and refreshes data after mutations.
+- Route changes update visible screens and panel state.
+
+8. Important Internal Flows
+Make these flows visible in the diagram:
+- Sign in / sign up -> session creation -> current user query -> dashboard redirect.
+- Workspace selection -> workspace details -> projects list -> project details.
+- Project selection -> task list -> task detail -> task update.
+- Kanban drag-and-drop -> bulk task update -> database write -> UI refresh.
+- Join workspace by invite code -> membership creation -> workspace access.
+- Member role change -> authorization validation -> database update.
+
+9. Error and State Handling
+Include a small section or callouts for:
+- Loading states
+- Empty states
+- Validation errors
+- Unauthorized responses
+- Missing session handling
+- Not found handling
+- Fallback UI / error boundary
+
+Suggested layout:
+- Left side: user interaction and frontend UI.
+- Middle: typed hooks, RPC client, API router, session middleware, validation, authorization.
+- Right side: feature handlers and Appwrite persistence.
+- Keep the architecture layered and easy to trace from top to bottom or left to right.
+
+Style requirements:
+- Professional enterprise software diagram
+- Strong hierarchy and spacing
+- Clear section headers
+- Minimal clutter
+- Precise labels
+- Consistent icon style if icons are used
+- Rounded cards with subtle shadows
+- Clean arrows showing dependency and data flow
+- Make the diagram look like a technical design artifact for a report
+
+If text is included, keep it short and readable. The image should visually explain how WOW works internally, including route handling, state handling, validation, authorization, and database interaction.

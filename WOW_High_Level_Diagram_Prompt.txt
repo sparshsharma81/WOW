@@ -1,0 +1,77 @@
+Create a professional high-level architecture diagram for a web application named WOW (Business Management Tool). The diagram should look like a polished enterprise software architecture graphic, suitable for inclusion in an official project report. Use a clean white or light background, modern corporate styling, clear arrows, distinct color-coded sections, and readable labels. Do not make it look like a toy diagram. Keep the layout balanced and easy to follow.
+
+The system is a Jira-inspired collaborative workspace and task management platform built with Next.js, Hono, Appwrite, React Query, Tailwind CSS, and a feature-based architecture. The diagram must show the complete end-to-end flow from user interaction to backend data storage.
+
+Include these major blocks:
+
+1. Users / Actors
+- End User
+- Workspace Admin
+- Team Member
+
+2. Client / Presentation Layer
+- Browser
+- Next.js App Router
+- Root Layout and Providers
+- Authentication Pages
+- Dashboard Shell
+- Standalone Workspace Pages
+- Reusable UI Components
+- Query Provider / React Query
+- Typed RPC Client
+
+3. Application API Layer
+- Next API Catch-All Route (/api/[[...route]])
+- Hono API Router
+- Session Middleware
+- Validation Schemas (Zod)
+- Feature Routers
+- Auth Router
+- Workspace Router
+- Project Router
+- Task Router
+- Member Router
+- OAuth Callback Route
+
+4. Domain Feature Modules
+- Auth Feature: sign in, sign up, logout, current user
+- Workspaces Feature: create, join, update, invite, analytics
+- Projects Feature: CRUD, analytics, settings
+- Tasks Feature: CRUD, filters, Kanban, Table, Calendar, bulk updates
+- Members Feature: list members, update roles, remove members
+
+5. Backend Services
+- Appwrite Account Service
+- Appwrite Users Service
+- Appwrite Databases
+- Appwrite Storage
+- Appwrite Session Store
+- Workspace / Project / Task Documents
+- Uploaded Images / Avatars
+
+6. Cross-Cutting Concerns
+- Environment Configuration (Appwrite IDs, URLs, secrets)
+- CORS Policy
+- Analytics UI / Charts
+- Calendar View
+- Kanban View
+- Table View
+- OAuth Provider Flow
+
+Show the main data flow clearly as follows:
+User -> Browser -> Next.js App Router -> Reusable UI Components / Query Provider -> Typed RPC Client -> Next API Catch-All Route -> Hono API Router -> Session Middleware and Validation Schemas -> Feature Server Handlers -> Appwrite Services -> Response back to UI.
+
+Visually emphasize that the application is feature-based and modular. Show the frontend, API layer, feature modules, and Appwrite backend as separate horizontal or vertical sections. Use arrows to indicate request and response movement. Make the auth flow, workspace flow, project flow, task flow, and member flow visibly distinct but connected through the shared API layer.
+
+Style requirements:
+- Professional enterprise architecture diagram
+- Clean typography and strong hierarchy
+- Rounded boxes with subtle shadows
+- Distinct section headers
+- Minimal clutter
+- Precise labels
+- Symmetrical spacing
+- Clear arrow direction
+- Avoid decorative elements that reduce readability
+
+If text is included inside the image, keep it concise and highly legible. The final image should feel like a formal system architecture diagram for a software engineering report.
