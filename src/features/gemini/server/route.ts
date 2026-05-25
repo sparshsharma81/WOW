@@ -13,7 +13,7 @@ const chatSchema = z.object({
   messages: z.array(messageSchema).min(1),
 });
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-2.0-flash-lite";
 
 const app = new Hono().post(
   "/chat",
@@ -56,7 +56,7 @@ const app = new Hono().post(
       const errorText = await response.text();
       return c.json(
         { error: `Gemini request failed: ${errorText}` },
-        response.status,
+        502,
       );
     }
 
