@@ -112,4 +112,8 @@ jobs:
         with:
           header: vercel-preview
           message: |
+<<<<<<< HEAD
             Preview environment has been cleaned up for this closed PR.
+=======
+            Preview environment has been cleaned up for this closed PR.
+>>>>>>> d78674775e071b9c73c9a8262476d05bb9863eb4
