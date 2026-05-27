@@ -22,6 +22,7 @@ const starterPrompts = [
   "Summarize this workspace in a few bullets.",
   "Help me plan the next sprint for this project.",
   "Turn this idea into a task checklist.",
+  "Say Hello to Sparsh Sharma",
 ];
 
 export const GeminiChat = ({ storageKey = "wow-gemini-chat-history" }: GeminiChatProps) => {
