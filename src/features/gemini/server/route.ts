@@ -13,7 +13,7 @@ const chatSchema = z.object({
   messages: z.array(messageSchema).min(1),
 });
 
-const GEMINI_MODEL = "gemini-2.0-flash-lite";
+const GEMINI_MODEL = "gemini-3-flash-preview";
 
 const app = new Hono().post(
   "/chat",
